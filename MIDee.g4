@@ -86,6 +86,7 @@ scopeHeader:
 playStatement:
     whiteSpace PLAY whiteSpace note (whiteSpace COMMA whiteSpace note)* whiteSpace FOR whiteSpace duration whiteSpace ENDSTMT whiteSpace
     {
+        //schedule the note(s) to play from current tie till the given duration
         if(notesToPlay.size() > 1){
             for(Object singleNote:notesToPlay){
                 midi.play((Integer)singleNote, currentTick, currentTick+$duration.value);
@@ -95,6 +96,7 @@ playStatement:
             midi.play((Integer)notesToPlay.get(0), currentTick, currentTick+$duration.value);
         }
 
+        //now update the tick and clear the notesToPlay array
         currentTick += $duration.value;
         notesToPlay.clear();
     }
@@ -111,7 +113,7 @@ waitStatement:
 duration
 returns [long value]
 :
-    //placeholder function blocks used for now, before linking to the MIDIHelper
+    //convert beats into ticks and store the value
     NUMBER
         {
             $value = midi.getDurationInTicks((double)$NUMBER.int);
