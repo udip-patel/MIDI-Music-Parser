@@ -1,7 +1,8 @@
-grammar MIDIParser;
+grammar MIDee;
 
 //Included in the generated .java file above the class definition
 @header {
+package cas.cs4tb3.parser;
 import java.util.*;
 }
 
