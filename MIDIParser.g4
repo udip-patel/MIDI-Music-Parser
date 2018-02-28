@@ -1,4 +1,4 @@
-grammar PythonMacros;
+grammar MIDIParser;
 
 //Included in the generated .java file above the class definition
 @header {
@@ -8,6 +8,8 @@ import java.util.*;
 //Included in the body of the generated class. This is the place
 //to define fields, method, nested classes etc.
 @members {
+
+    public List notesToPlay = new ArrayList();
 
 }
 
@@ -34,7 +36,7 @@ instrumentBlock:
     whiteSpace scopeHeader whiteSpace OPENBLOCK whiteSpace
         (playStatement|waitStatement)*
     CLOSEBLOCK whiteSpace
-    ;
+;
 
 scopeHeader:
     INSTRUMENT
@@ -47,14 +49,24 @@ scopeHeader:
                 System.out.println("set tempo to " + $NUMBER.text);
             }
         }
-    ;
+;
 
 playStatement:
     whiteSpace PLAY whiteSpace note (whiteSpace COMMA whiteSpace note)* whiteSpace FOR whiteSpace duration whiteSpace ENDSTMT whiteSpace
     {
+        String noteArray = "";
+        if(notesToPlay.size() > 1){
+            for(Object singleNote:notesToPlay){
+                noteArray+= String.valueOf(singleNote) + " ";
+            }
+        }
+        else noteArray = String.valueOf(notesToPlay.get(0));
+
+        System.out.println(" notes to play: " + noteArray);
         System.out.println(" play note(s) for duration: " + $duration.value);
+        notesToPlay.clear();
     }
-    ;
+;
 
 
 waitStatement:
@@ -62,7 +74,7 @@ waitStatement:
     {
         System.out.println("wait for: " + $duration.value);
     }
-    ;
+;
 
 duration
 returns [long value]
@@ -70,23 +82,42 @@ returns [long value]
     //placeholder function blocks used for now, before linking to the MIDIHelper
     NUMBER { $value = Long.valueOf($NUMBER.int); }
     | FLOAT { $value = (long)(Double.parseDouble($FLOAT.text)); }
-    ;
+;
 
 note:
     NOTENAME whiteSpace NUMBER
     {
-        String res = $NOTENAME.text;
-        if($NOTENAME.text.contains("#")){
-            //noted sharp
-        }
-        if($NOTENAME.text.contains("_")){
-            //noted flat
+        //converting a name [a-g] (#|_) with an octave number into an MIDI int
+        int res = 0;
+        String currentNote = $NOTENAME.text;
+
+        //match the note with its base octave at 0 (from the MIDI table)
+        //https://midikits.net/midi_analyser/midi_note_numbers_for_octaves.htm
+        if(currentNote.contains("c")) res = 0;
+        else if(currentNote.contains("d")) res = 2;
+        else if(currentNote.contains("e")) res = 4;
+        else if(currentNote.contains("f")) res = 5;
+        else if(currentNote.contains("g")) res = 7;
+        else if(currentNote.contains("a")) res = 9;
+        else if(currentNote.contains("b")) res = 11;
+        else{
+            //signal error... cannot play this note
         }
 
-        res+= " num: " + $NUMBER.text + ", ";
-        System.out.print(res);
+        //sharp or flat increments/decrements a semitone
+        if($NOTENAME.text.contains("#")) res++;
+        if($NOTENAME.text.contains("_")) res--;
+
+        //add 12 times the octave number to the result, this is the note to play
+        res += 12*$NUMBER.int;
+
+        //keep value within MIDI note boundaries
+        if(res < 0) res = 0;
+        if(res > 127) res = 127;
+
+        notesToPlay.add(res);
     }
-    ;
+;
 
 
 
