@@ -1,0 +1,43 @@
+synth @ 150 {
+    play b4, e5 for 1;
+    play g#4 for 0.5;
+    play a4 for 0.5;
+
+    play b4, d5 for 1;
+
+    play a4 for 0.5;
+    play g#4 for 0.5;
+}
+
+synth {
+    play e4, a4 for 1;
+
+    play e4 for 0.5;
+    play a4 for 0.5;
+
+    play c5, e5 for 1;
+
+    play b4 for 0.5;
+    play a4 for 0.5;
+}
+
+synth {
+    play g#4, b4 for 1;
+
+    play g#4 for 0.5;
+    play a4 for 0.5;
+
+    play b4, d5 for 1;
+
+    play c5, e5 for 1;
+}
+
+synth {
+    play a4, c4 for 1;
+
+    play e4, a4 for 1;
+
+    play e4, a4 for 1;
+
+    wait for 1;
+}
