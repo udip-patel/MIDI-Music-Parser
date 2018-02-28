@@ -1,4 +1,4 @@
-set Instrument to synth
+set Instrument to 80
 set tempo to 150
  notes to play: 59 64 
  play note(s) for duration: 1
@@ -12,7 +12,8 @@ set tempo to 150
  play note(s) for duration: 0
  notes to play: 56
  play note(s) for duration: 0
-set Instrument to synth
+Error. No instrument found
+set tempo to 120
  notes to play: 52 57 
  play note(s) for duration: 1
  notes to play: 52
@@ -25,7 +26,6 @@ set Instrument to synth
  play note(s) for duration: 0
  notes to play: 57
  play note(s) for duration: 0
-set Instrument to synth
  notes to play: 56 59 
  play note(s) for duration: 1
  notes to play: 56
@@ -36,7 +36,6 @@ set Instrument to synth
  play note(s) for duration: 1
  notes to play: 60 64 
  play note(s) for duration: 1
-set Instrument to synth
  notes to play: 57 48 
  play note(s) for duration: 1
  notes to play: 52 57 

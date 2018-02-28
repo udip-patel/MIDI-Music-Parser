@@ -4,6 +4,7 @@ grammar MIDee;
 @header {
 package cas.cs4tb3.parser;
 import java.util.*;
+import cas.cs4tb3.MIDIHelper;
 }
 
 //Included in the body of the generated class. This is the place
@@ -11,6 +12,11 @@ import java.util.*;
 @members {
 
     public List notesToPlay = new ArrayList();
+    private MIDIHelper midi = new MIDIHelper();
+
+    public String currentInstrument = "";
+    public int currentTempo = 120;
+    public long currentTick = 0;
 
 }
 
@@ -28,7 +34,11 @@ import java.util.*;
 //Start of Parser ---
 
 program:
-    instrumentBlock* EOF;
+    instrumentBlock*
+    {
+        midi.saveSequence();
+    }
+    EOF;
 
 whiteSpace:
     SPACES* NEWLINE*;
@@ -41,13 +51,36 @@ instrumentBlock:
 
 scopeHeader:
     INSTRUMENT
-        //set the instrument according to the text given
-        { System.out.println("set Instrument to " + $INSTRUMENT.text); }
+        //set the instrument according to the text given, if it is different from the current instrument
+        {
+            if(!$INSTRUMENT.text.equals(currentInstrument)){
+                int instrmnt = midi.getInstrumentId($INSTRUMENT.text);
+                if(instrmnt == -1){
+                    System.out.println("Error. No instrument found");
+                }
+                else{
+                    currentInstrument = $INSTRUMENT.text;
+                    System.out.println("set Instrument to " + instrmnt);
+                    midi.setInstrument(instrmnt, currentTick);
+                }
+            }
+        }
     (whiteSpace TEMPOMARKER whiteSpace NUMBER)?
-        //if a tempo was included, set the value accordingly
+        //if a tempo was included, set the value accordingly, only if it is different from the current tempo. same goes for when tempo is excluded
         {
             if($NUMBER != null) {
-                System.out.println("set tempo to " + $NUMBER.text);
+                if($NUMBER.int != currentTempo){
+                    midi.setTempo($NUMBER.int, currentTick);
+                    currentTempo = $NUMBER.int;
+                    System.out.println("set tempo to " + $NUMBER.text);
+                }
+            }
+            else{
+                if(currentTempo != 120){
+                    midi.setTempo(120, currentTick);
+                    currentTempo = 120;
+                    System.out.println("set tempo to " + 120);
+                }
             }
         }
 ;
@@ -138,4 +171,4 @@ FOR: 'for';
 PLAY: 'play';
 WAIT: 'wait';
 NOTENAME: [a-g]('#'|'_')?;
-INSTRUMENT: [a-zA-Z]+;
+INSTRUMENT: ([a-zA-Z]+);

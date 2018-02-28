@@ -9,7 +9,7 @@ synth @ 150 {
     play g#4 for 0.5;
 }
 
-synth {
+fasf {
     play e4, a4 for 1;
 
     play e4 for 0.5;
