@@ -56,12 +56,12 @@ scopeHeader:
             if(!$INSTRUMENT.text.equals(currentInstrument)){
                 int instrmnt = midi.getInstrumentId($INSTRUMENT.text);
                 if(instrmnt == -1){
-                    System.out.println("Error. No instrument found");
+                    //error... no instrument found
                 }
+                //set instrument
                 else{
-                    currentInstrument = $INSTRUMENT.text;
-                    System.out.println("set Instrument to " + instrmnt);
                     midi.setInstrument(instrmnt, currentTick);
+                    currentInstrument = $INSTRUMENT.text;
                 }
             }
         }
@@ -72,14 +72,12 @@ scopeHeader:
                 if($NUMBER.int != currentTempo){
                     midi.setTempo($NUMBER.int, currentTick);
                     currentTempo = $NUMBER.int;
-                    System.out.println("set tempo to " + $NUMBER.text);
                 }
             }
             else{
                 if(currentTempo != 120){
                     midi.setTempo(120, currentTick);
                     currentTempo = 120;
-                    System.out.println("set tempo to " + 120);
                 }
             }
         }
@@ -88,16 +86,16 @@ scopeHeader:
 playStatement:
     whiteSpace PLAY whiteSpace note (whiteSpace COMMA whiteSpace note)* whiteSpace FOR whiteSpace duration whiteSpace ENDSTMT whiteSpace
     {
-        String noteArray = "";
         if(notesToPlay.size() > 1){
             for(Object singleNote:notesToPlay){
-                noteArray+= String.valueOf(singleNote) + " ";
+                midi.play((Integer)singleNote, currentTick, currentTick+$duration.value);
             }
         }
-        else noteArray = String.valueOf(notesToPlay.get(0));
+        else{
+            midi.play((Integer)notesToPlay.get(0), currentTick, currentTick+$duration.value);
+        }
 
-        System.out.println(" notes to play: " + noteArray);
-        System.out.println(" play note(s) for duration: " + $duration.value);
+        currentTick += $duration.value;
         notesToPlay.clear();
     }
 ;
@@ -106,7 +104,7 @@ playStatement:
 waitStatement:
     whiteSpace WAIT whiteSpace FOR whiteSpace duration whiteSpace ENDSTMT whiteSpace
     {
-        System.out.println("wait for: " + $duration.value);
+        currentTick += $duration.value;
     }
 ;
 
@@ -114,14 +112,20 @@ duration
 returns [long value]
 :
     //placeholder function blocks used for now, before linking to the MIDIHelper
-    NUMBER { $value = Long.valueOf($NUMBER.int); }
-    | FLOAT { $value = (long)(Double.parseDouble($FLOAT.text)); }
+    NUMBER
+        {
+            $value = midi.getDurationInTicks((double)$NUMBER.int);
+        }
+    | FLOAT
+        {
+            $value = midi.getDurationInTicks(Double.parseDouble($FLOAT.text));
+        }
 ;
 
 note:
     NOTENAME whiteSpace NUMBER
     {
-        //converting a name [a-g] (#|_) with an octave number into an MIDI int
+        //converting a name [a-g] (#|_) with an octave number (0-10) into int
         int res = 0;
         String currentNote = $NOTENAME.text;
 
